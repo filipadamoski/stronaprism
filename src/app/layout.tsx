@@ -1,3 +1,5 @@
+import './styl.css'
+
 export const metadata = {
   title: 'Pogoda',
 }
