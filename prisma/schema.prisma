@@ -1,0 +1,31 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Miejscowosc {
+  id      Int       @id @default(autoincrement())
+  nazwa   String
+  kraj    String
+  pomiary Pomiary[]
+}
+
+model Miesiace {
+  id      Int       @id @default(autoincrement())
+  nazwa   String
+  pora    String
+  pomiary Pomiary[]
+}
+
+model Pomiary {
+  id              Int          @id @default(autoincrement())
+  temperatura     Int
+  id_miejscowosc  Int
+  id_miesiac      Int
+  miejscowosc     Miejscowosc  @relation(fields: [id_miejscowosc], references: [id])
+  miesiace        Miesiace     @relation(fields: [id_miesiac], references: [id])
+}
