@@ -9,9 +9,10 @@ function getWeatherIcon(temperatura: number): string {
 export default async function Home({
   searchParams,
 }: {
-  searchParams: { id_miesiaca?: string }
+  searchParams: Promise<{ id_miesiaca?: string }>
 }) {
-  const idMiesiaca = Number(searchParams.id_miesiaca) || 7
+  const params = await searchParams
+  const idMiesiaca = Number(params.id_miesiaca) || 7
 
   const pomiary = await prisma.pomiary.findMany({
     where: { id_miesiac: idMiesiaca },
