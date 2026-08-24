@@ -76,8 +76,15 @@ Uwaga: lokalny `.env` służy do developmentu lokalnego — wskazuje na bazę de
 
 ## Kryteria akceptacji
 
-- [ ] Repo publiczne na GitHubie zawiera master i dev; `.env` NIE jest w historii
-- [ ] Push na dev generuje preview URL z działającą stroną czytającą bazę dev
-- [ ] Push na master nadal aktualizuje produkcję bez zmiany procedury
-- [ ] Modyfikacja danych w bazie dev NIE zmienia zawartości strony produkcyjnej
-- [ ] Lokalny `npm run dev` korzysta z bazy dev
+- [x] Repo publiczne na GitHubie zawiera master i dev; `.env` NIE jest w historii
+- [x] Push na dev generuje preview URL z działającą stroną czytającą bazę dev
+- [x] Push na master nadal aktualizuje produkcję bez zmiany procedury
+- [x] Modyfikacja danych w bazie dev NIE zmienia zawartości strony produkcyjnej
+- [x] Lokalny `npm run dev` korzysta z bazy dev
+
+## Notatka operacyjna (2026-08-24)
+
+Vercel domyślnie chroni preview deploye logowaniem SSO (Deployment Protection).
+Żeby adres preview był publiczny, ochronę wyłączono przez API
+(`PATCH /v9/projects/stronaprism`, `ssoProtection: null`). Gdyby wróciła,
+objawem jest strona logowania Vercela zamiast strony aplikacji pod adresem preview.
