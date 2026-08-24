@@ -95,7 +95,7 @@ async function main() {
     }
   }
   await prisma.pomiary.deleteMany({})
-  await prisma.miejscowosc.update({
+  await prisma.miejscowosc.updateMany({
     where: { nazwa: 'Bratysława' },
     data: { kraj: 'Słowacja' },
   })
