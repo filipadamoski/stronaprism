@@ -26,6 +26,8 @@ body {
     float: left;
 }
 
+
+
 footer {
     background-color: #388E3C;
     color: white;
@@ -44,9 +46,11 @@ table img {
 
 a {
     color: #388E3C;
-    margin: 20px;
+    margin: 5px;
+    padding: 5px 10px;
     font-style: italic;
     font-size: 200%;
+    display: inline-block;
 }
 
 p {

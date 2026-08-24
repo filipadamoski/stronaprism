@@ -1,0 +1,19 @@
+# dependencies
+node_modules/
+
+# next.js
+.next/
+out/
+
+# env & secrets
+.env
+.env*.local
+
+# vercel
+.vercel
+
+# opencode/superpowers
+.superpowers/
+
+# misc
+*.log
