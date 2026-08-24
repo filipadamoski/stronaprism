@@ -1,3 +1,6 @@
+import { pathToFileURL } from 'node:url'
+import { PrismaClient } from '@prisma/client'
+
 export const ROK = '2025'
 
 export const DNI_W_MIESIACU = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
@@ -43,4 +46,64 @@ export function monthlyAverages(dates, temps) {
     }
     return Math.round(a.suma / a.dni)
   })
+}
+
+async function pobierzMiasto(miasto, { lat, lon }) {
+  const url = `https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lon}&start_date=${ROK}-01-01&end_date=${ROK}-12-31&daily=temperature_2m_mean&timezone=auto`
+  const res = await fetch(url)
+  if (!res.ok) {
+    throw new Error(`${miasto}: HTTP ${res.status} od Open-Meteo`)
+  }
+  const json = await res.json()
+  const { time, temperature_2m_mean } = json.daily ?? {}
+  if (!Array.isArray(time) || !Array.isArray(temperature_2m_mean)) {
+    throw new Error(`${miasto}: odpowiedź bez daily.temperature_2m_mean`)
+  }
+  return { dates: time, temps: temperature_2m_mean }
+}
+
+async function zbierzWiersze() {
+  const wiersze = []
+  for (const [nazwa, koord] of Object.entries(MIASTA)) {
+    const { dates, temps } = await pobierzMiasto(nazwa, koord)
+    const srednie = monthlyAverages(dates, temps)
+    srednie.forEach((temperatura, i) => wiersze.push({ nazwa, temperatura, id_miesiac: i + 1 }))
+    console.log(`${nazwa}: ${srednie.join(', ')}`)
+    await new Promise((r) => setTimeout(r, 300))
+  }
+  return wiersze
+}
+
+async function main() {
+  const wiersze = await zbierzWiersze()
+  if (process.argv.includes('--dry-run')) {
+    console.log(`DRY-RUN: policzono ${wiersze.length} wierszy, baza nietknięta`)
+    return
+  }
+  const prisma = new PrismaClient()
+  const miasta = await prisma.miejscowosc.findMany()
+  const idPoNazwie = new Map(miasta.map((m) => [m.nazwa, m.id]))
+  for (const nazwa of Object.keys(MIASTA)) {
+    if (!idPoNazwie.has(nazwa)) {
+      throw new Error(`Brak miasta w bazie: ${nazwa}`)
+    }
+  }
+  await prisma.pomiary.deleteMany({})
+  await prisma.miejscowosc.update({
+    where: { nazwa: 'Bratysława' },
+    data: { kraj: 'Słowacja' },
+  })
+  const dane = wiersze.map((w) => ({
+    temperatura: w.temperatura,
+    id_miejscowosc: idPoNazwie.get(w.nazwa),
+    id_miesiac: w.id_miesiac,
+  }))
+  const r = await prisma.pomiary.createMany({ data: dane })
+  console.log(`Wstawiono ${r.count} pomiarów.`)
+  await prisma.$disconnect()
+}
+
+const bezposrednio = process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href
+if (bezposrednio) {
+  await main()
 }
