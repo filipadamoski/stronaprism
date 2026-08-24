@@ -18,6 +18,8 @@ export const MIASTA = {
   'Bratysława': { lat: 48.1486, lon: 17.1077 },
 }
 
+const REF_PRODUKCJI = 'oqlvcggkderqefkvqpxr'
+
 export function monthlyAverages(dates, temps) {
   if (dates.length !== temps.length) {
     throw new Error('Długości dat i temperatur się nie zgadzają')
@@ -75,6 +77,10 @@ async function zbierzWiersze() {
 }
 
 async function main() {
+  if ((process.env.DATABASE_URL ?? '').includes(REF_PRODUKCJI) && !process.argv.includes('--prod')) {
+    console.error(`STOP: DATABASE_URL wskazuje baze produkcyjna (${REF_PRODUKCJI}). Dla swiadomego nadpisania uruchom z --prod.`)
+    process.exit(1)
+  }
   const wiersze = await zbierzWiersze()
   if (process.argv.includes('--dry-run')) {
     console.log(`DRY-RUN: policzono ${wiersze.length} wierszy, baza nietknięta`)
